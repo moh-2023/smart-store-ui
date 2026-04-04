@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>متجر الأناقة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
+        .product-card { transition: transform 0.2s; }
+        .product-card:active { transform: scale(0.98); }
+    </style>
+</head>
+<body class="p-4">
+
+    <header class="text-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">أحدث التشكيلات ✨</h1>
+        <p class="text-sm text-gray-500">اختر ما يناسبك بضغطة زر</p>
+    </header>
+
+    <div id="products-grid" class="grid grid-cols-2 gap-4">
+        </div>
+
+    <script>
+        // 1. تهيئة تطبيق تليجرام
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // فتح النافذة بكامل الشاشة
+
+        // 2. إعدادات Supabase (ضع مفاتيحك هنا)
+        const SUPABASE_URL = 'ضع_رابط_سوبابيس_هنا';
+        const SUPABASE_KEY = 'ضع_مفتاح_سوبابيس_هنا';
+        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // 3. جلب البضاعة من قاعدة البيانات
+        async function loadProducts() {
+            const { data: products, error } = await supabase
+                .from('inventory')
+                .select('*')
+                .gt('stock', 0); // جلب المتوفر فقط
+
+            if (error) {
+                console.error("Error fetching data:", error);
+                return;
+            }
+
+            const grid = document.getElementById('products-grid');
+            
+            // 4. تصميم كل قطعة (Card) وكيف تظهر للزبون
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = "product-card bg-white rounded-xl shadow-sm p-3 flex flex-col items-center";
+                
+                card.innerHTML = `
+                    <div class="w-full h-32 bg-gray-100 rounded-lg mb-3 flex items-center justify-center text-gray-400 text-xs">
+                        [صورة المنتج]
+                    </div>
+                    <h2 class="text-sm font-bold text-gray-800 text-center">${product.name}</h2>
+                    <p class="text-xs text-gray-500 mt-1">اللون: ${product.color} | المقاس: ${product.size}</p>
+                    <p class="text-lg font-black text-blue-600 mt-2">$${product.price}</p>
+                    <button onclick="addToCart('${product.id}', '${product.name}')" class="mt-3 w-full bg-blue-600 text-white text-sm font-bold py-2 rounded-lg hover:bg-blue-700">
+                        إضافة للحقيبة
+                    </button>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // 5. إرسال الطلب للبوت عند الضغط على إضافة
+        function addToCart(id, name) {
+            // استخدام ميزة Haptic Feedback لاهتزاز الهاتف عند الضغط (تجربة مستخدم فخمة)
+            tg.HapticFeedback.impactOccurred('light');
+            
+            // إرسال رسالة مخفية للبوت بأنه تم اختيار المنتج
+            tg.sendData(`add_${id}`);
+            
+            // إغلاق النافذة ليعود الزبون للدردشة ويرى رد البوت
+            tg.close(); 
+        }
+
+        // تشغيل الدالة عند فتح الصفحة
+        loadProducts();
+    </script>
+</body>
+</html>
