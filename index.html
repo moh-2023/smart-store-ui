@@ -2,86 +2,315 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>متجر الأناقة</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>متجر الأناقة - عروض حصرية</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+    
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
+
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; }
-        .product-card { transition: transform 0.2s; }
-        .product-card:active { transform: scale(0.98); }
+        body { font-family: 'Tajawal', sans-serif; background-color: #f3f4f6; overflow-x: hidden; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* تأثيرات حركية (Animations) */
+        @keyframes pulse-fast { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.05); } }
+        .animate-pulse-fast { animation: pulse-fast 1s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        @keyframes slideUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .slide-up { animation: slideUp 0.4s ease-out forwards; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .marquee-content { display: inline-block; animation: marquee 15s linear infinite; white-space: nowrap; }
+
+        /* تصميم كروت المنتجات */
+        .product-card { transition: all 0.2s; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .product-card:active { transform: scale(0.97); }
+        .discount-badge { position: absolute; top: 8px; right: 8px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; z-index: 10; }
+        
+        /* النوافذ المنبثقة */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 100; display: flex; justify-content: center; align-items: center; }
+        .coupon-box { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 2rem; border-radius: 24px; text-align: center; width: 85%; max-width: 350px; position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        
+        /* إشعار المشتريات الحي */
+        .social-proof { position: fixed; bottom: 85px; left: 16px; background: rgba(0,0,0,0.8); color: white; padding: 8px 12px; border-radius: 20px; font-size: 0.75rem; display: flex; align-items: center; gap: 8px; z-index: 90; opacity: 0; transition: opacity 0.5s; pointer-events: none; }
+        .social-proof.show { opacity: 1; }
     </style>
 </head>
-<body class="p-4">
+<body class="pb-24">
 
-    <header class="text-center mb-6">
-        <h1 class="text-2xl font-bold text-gray-800">أحدث التشكيلات ✨</h1>
-        <p class="text-sm text-gray-500">اختر ما يناسبك بضغطة زر</p>
-    </header>
+    <div id="welcome-modal" class="overlay">
+        <div class="coupon-box slide-up">
+            <button onclick="closeModalWindow()" class="absolute top-3 left-4 text-white/70 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+            <div class="text-5xl mb-3 animate-pulse-fast">🎁</div>
+            <h2 class="text-2xl font-black mb-2">مبروك! لك هدية</h2>
+            <p class="text-sm text-white/90 mb-4">لقد تم اختيارك عشوائياً للحصول على شحن مجاني لطلبك الأول اليوم.</p>
+            <div class="bg-white text-red-600 font-black text-xl py-3 rounded-xl border-dashed border-2 border-red-300 mb-4 tracking-widest">FREEIQ</div>
+            <button onclick="closeModalWindow()" class="w-full bg-yellow-400 text-red-900 font-bold py-3 rounded-xl shadow-lg active:scale-95 transition-transform">اقبل الهدية وتسوق الآن</button>
+        </div>
+    </div>
 
-    <div id="products-grid" class="grid grid-cols-2 gap-4">
+    <div class="bg-gray-900 text-white text-xs py-2 overflow-hidden relative">
+        <div class="marquee-content font-bold text-yellow-300">
+            🔥 أسرع! عروض التصفية بدأت | 🚚 شحن مجاني للطلبات فوق 50$ | 💳 الدفع عند الاستلام متوفر في كل المحافظات
+        </div>
+    </div>
+
+    <header class="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-100">
+        <div class="flex justify-between items-center p-4 pb-2">
+            <h1 class="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-orange-500">الأناقة ⚡</h1>
+            <div class="flex flex-col items-end">
+                <span class="text-[10px] text-red-500 font-bold mb-1"><i class="fas fa-bolt"></i> ينتهي العرض خلال:</span>
+                <div class="flex gap-1 text-white text-xs font-bold">
+                    <span class="bg-red-600 rounded px-1.5 py-0.5" id="h">02</span><span class="text-red-600">:</span>
+                    <span class="bg-red-600 rounded px-1.5 py-0.5" id="m">45</span><span class="text-red-600">:</span>
+                    <span class="bg-red-600 rounded px-1.5 py-0.5" id="s">10</span>
+                </div>
+            </div>
         </div>
 
+        <div class="flex overflow-x-auto gap-3 p-4 pt-2 hide-scrollbar">
+            <button onclick="filterCategory('الكل', this)" class="cat-btn flex-shrink-0 flex flex-col items-center gap-1 active opacity-100">
+                <div class="icon-bg w-14 h-14 rounded-full bg-gradient-to-tr from-gray-800 to-gray-600 flex items-center justify-center text-white text-xl shadow-md"><i class="fas fa-star"></i></div>
+                <span class="text-xs font-bold text-gray-800">الكل</span>
+            </button>
+            <button onclick="filterCategory('رجالي', this)" class="cat-btn flex-shrink-0 flex flex-col items-center gap-1 opacity-60 transition-opacity">
+                <div class="icon-bg w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-xl border border-gray-200"><i class="fas fa-male"></i></div>
+                <span class="text-xs font-bold text-gray-600">رجالي</span>
+            </button>
+            <button onclick="filterCategory('نسائي', this)" class="cat-btn flex-shrink-0 flex flex-col items-center gap-1 opacity-60 transition-opacity">
+                <div class="icon-bg w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-xl border border-gray-200"><i class="fas fa-female"></i></div>
+                <span class="text-xs font-bold text-gray-600">نسائي</span>
+            </button>
+            <button onclick="filterCategory('أطفال', this)" class="cat-btn flex-shrink-0 flex flex-col items-center gap-1 opacity-60 transition-opacity">
+                <div class="icon-bg w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-xl border border-gray-200"><i class="fas fa-child"></i></div>
+                <span class="text-xs font-bold text-gray-600">أطفال</span>
+            </button>
+        </div>
+    </header>
+
+    <div id="products-grid" class="grid grid-cols-2 gap-3 p-4">
+        <div class="col-span-2 text-center py-10 text-gray-400">
+            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>جاري تحميل العروض...
+        </div>
+    </div>
+
+    <div id="social-proof" class="social-proof">
+        <img src="" class="w-6 h-6 rounded-full" id="sp-img" alt="user">
+        <div>
+            <p class="font-bold text-[10px] text-gray-200"><span id="sp-name">أحمد</span> من <span id="sp-city">بغداد</span></p>
+            <p class="text-[9px] text-green-400">اشترى للتو <span id="sp-item">المنتج</span></p>
+        </div>
+    </div>
+
+    <div id="cart-bar" class="fixed bottom-4 left-4 right-4 bg-gray-900 text-white p-3 rounded-2xl shadow-2xl flex justify-between items-center transform translate-y-24 transition-transform duration-300 z-50 border border-gray-700">
+        <div class="flex items-center gap-3">
+            <div class="relative">
+                <i class="fas fa-shopping-bag text-2xl text-gray-300"></i>
+                <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-900">0</span>
+            </div>
+            <div>
+                <p class="text-xs text-gray-400">الإجمالي</p>
+                <p class="text-lg font-black text-yellow-400">$<span id="cart-total">0.00</span></p>
+            </div>
+        </div>
+        <button onclick="checkout(this)" class="bg-gradient-to-r from-red-600 to-orange-500 text-white px-6 py-2.5 rounded-xl text-sm font-black shadow-lg shadow-red-500/30 active:scale-95 transition-all">إتمام الطلب <i class="fas fa-chevron-left text-[10px] mr-1"></i></button>
+    </div>
+
     <script>
-        // 1. تهيئة تطبيق تليجرام
-        const tg = window.Telegram.WebApp;
-        tg.expand(); // فتح النافذة بكامل الشاشة
+        // تعريف آمن لمكتبة تليجرام لمنع تعطل المتصفح العادي
+        let tg = null;
+        if (window.Telegram && window.Telegram.WebApp) {
+            tg = window.Telegram.WebApp;
+            try { tg.expand(); tg.ready(); } catch(e) {}
+        }
 
-        // 2. إعدادات Supabase (ضع مفاتيحك هنا)
-        const SUPABASE_URL = 'ضع_رابط_سوبابيس_هنا';
-        const SUPABASE_KEY = 'ضع_مفتاح_سوبابيس_هنا';
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // ==========================================
+        // 🚨 ضع روابط قاعدة البيانات هنا وأنت مطمئن 🚨
+        // ==========================================
+        const S_URL = 'https://tyqozguvpzualjrtmziz.supabase.co';
+        const S_KEY = 'sb_publishable_adpf3bfmKS3FJnly0NqoEg_-DKwnL6T';
 
-        // 3. جلب البضاعة من قاعدة البيانات
-        async function loadProducts() {
-            const { data: products, error } = await supabase
-                .from('inventory')
-                .select('*')
-                .gt('stock', 0); // جلب المتوفر فقط
+        let dbClient = null;
+        let allProducts = [];
+        let cart = [];
+        let cartTotal = 0;
 
-            if (error) {
-                console.error("Error fetching data:", error);
+        // دالة الإغلاق (تم تغيير اسمها لتجنب أي تضارب)
+        function closeModalWindow() {
+            const modal = document.getElementById('welcome-modal');
+            if (modal) modal.style.display = 'none';
+            if (tg && tg.HapticFeedback) {
+                try { tg.HapticFeedback.impactOccurred('medium'); } catch(e){}
+            }
+        }
+
+        // دالة التهيئة والاتصال بقاعدة البيانات
+        async function initApp() {
+            if (!S_URL.startsWith('http')) {
+                document.getElementById('products-grid').innerHTML = '<div class="col-span-2 text-center p-4 bg-red-50 text-red-600 rounded-lg text-sm border border-red-200 font-bold">⚠️ يرجى وضع رابط Supabase الحقيقي في الكود لكي تظهر البضاعة.</div>';
                 return;
             }
 
-            const grid = document.getElementById('products-grid');
-            
-            // 4. تصميم كل قطعة (Card) وكيف تظهر للزبون
-            products.forEach(product => {
-                const card = document.createElement('div');
-                card.className = "product-card bg-white rounded-xl shadow-sm p-3 flex flex-col items-center";
+            try {
+                // استخدام window.supabase بدلاً من تعريف const supabase لتجنب التضارب
+                dbClient = window.supabase.createClient(S_URL, S_KEY);
+                const { data, error } = await dbClient.from('inventory').select('*').gt('stock', 0);
                 
-                card.innerHTML = `
-                    <div class="w-full h-32 bg-gray-100 rounded-lg mb-3 flex items-center justify-center text-gray-400 text-xs">
-                        [صورة المنتج]
+                if (!error && data) {
+                    allProducts = data;
+                    renderProducts(allProducts);
+                    startFakeSocialProof(); // تشغيل ميزة الإشعارات الوهمية
+                } else {
+                    document.getElementById('products-grid').innerHTML = '<p class="col-span-2 text-center text-red-500 font-bold">حدث خطأ في جلب البيانات من القاعدة.</p>';
+                }
+            } catch(e) {
+                console.error("Database connection error:", e);
+                document.getElementById('products-grid').innerHTML = '<p class="col-span-2 text-center text-red-500 font-bold">خطأ في الاتصال بالخادم.</p>';
+            }
+        }
+
+        // دالة رسم المنتجات مع الحيل التسويقية (الخصم وشريط النفاذ)
+        function renderProducts(products) {
+            const grid = document.getElementById('products-grid');
+            grid.innerHTML = '';
+            
+            if(products.length === 0) {
+                grid.innerHTML = '<p class="col-span-2 text-center text-gray-500 py-10">لا توجد منتجات متوفرة حالياً.</p>';
+                return;
+            }
+
+            products.forEach(p => {
+                // حيل سيكولوجية: أسعار وأرقام وهمية
+                const fakeOriginalPrice = (p.price * 1.4).toFixed(2);
+                const fakeSold = Math.floor(Math.random() * 400) + 100;
+                const fakeStockPercent = Math.floor(Math.random() * 40) + 10; 
+
+                grid.innerHTML += `
+                    <div class="product-card relative">
+                        <div class="discount-badge">-40%</div>
+                        <div class="relative w-full h-44 bg-gray-100">
+                            <img src="${p.image_url || 'https://via.placeholder.com/300'}" class="w-full h-full object-cover" loading="lazy" alt="${p.name}">
+                            <div class="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-gray-800 border border-gray-200">
+                                📏 ${p.size}
+                            </div>
+                        </div>
+                        <div class="p-3">
+                            <h3 class="text-xs font-bold text-gray-700 leading-tight h-8 overflow-hidden">${p.name}</h3>
+                            <div class="flex items-baseline gap-2 mt-1">
+                                <span class="text-red-600 font-black text-lg">$${p.price}</span>
+                                <span class="text-gray-400 text-[10px] line-through">$${fakeOriginalPrice}</span>
+                            </div>
+                            <div class="mt-2">
+                                <div class="flex justify-between text-[9px] text-gray-500 mb-1">
+                                    <span>تم بيع ${fakeSold}</span>
+                                    <span class="text-red-500 font-bold">باقي القليل</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                    <div class="bg-gradient-to-r from-red-500 to-orange-400 h-1.5 rounded-full" style="width: ${fakeStockPercent}%"></div>
+                                </div>
+                            </div>
+                            <button onclick="addToCart('${p.id}', '${p.name}', ${p.price})" class="mt-3 w-full bg-gray-900 text-white text-xs font-bold py-2 rounded-lg flex justify-center items-center gap-1 hover:bg-gray-800 active:bg-gray-700">
+                                <i class="fas fa-cart-plus"></i> أضف للسلة
+                            </button>
+                        </div>
                     </div>
-                    <h2 class="text-sm font-bold text-gray-800 text-center">${product.name}</h2>
-                    <p class="text-xs text-gray-500 mt-1">اللون: ${product.color} | المقاس: ${product.size}</p>
-                    <p class="text-lg font-black text-blue-600 mt-2">$${product.price}</p>
-                    <button onclick="addToCart('${product.id}', '${product.name}')" class="mt-3 w-full bg-blue-600 text-white text-sm font-bold py-2 rounded-lg hover:bg-blue-700">
-                        إضافة للحقيبة
-                    </button>
                 `;
-                grid.appendChild(card);
             });
         }
 
-        // 5. إرسال الطلب للبوت عند الضغط على إضافة
-        function addToCart(id, name) {
-            // استخدام ميزة Haptic Feedback لاهتزاز الهاتف عند الضغط (تجربة مستخدم فخمة)
-            tg.HapticFeedback.impactOccurred('light');
+        // فلترة الأقسام
+        function filterCategory(cat, element) {
+            if(tg && tg.HapticFeedback) { try{ tg.HapticFeedback.selectionChanged(); }catch(e){} }
             
-            // إرسال رسالة مخفية للبوت بأنه تم اختيار المنتج
-            tg.sendData(`add_${id}`);
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.classList.remove('active', 'opacity-100');
+                btn.classList.add('opacity-60');
+                btn.querySelector('.icon-bg').className = 'icon-bg w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 text-xl border border-gray-200';
+            });
             
-            // إغلاق النافذة ليعود الزبون للدردشة ويرى رد البوت
-            tg.close(); 
+            element.classList.remove('opacity-60');
+            element.classList.add('active', 'opacity-100');
+            element.querySelector('.icon-bg').className = 'icon-bg w-14 h-14 rounded-full bg-gradient-to-tr from-gray-800 to-gray-600 flex items-center justify-center text-white text-xl shadow-md';
+
+            const filtered = cat === 'الكل' ? allProducts : allProducts.filter(p => p.main_category === cat);
+            renderProducts(filtered);
         }
 
-        // تشغيل الدالة عند فتح الصفحة
-        loadProducts();
+        // الإضافة للسلة
+        function addToCart(id, name, price) {
+            if(tg && tg.HapticFeedback) { try{ tg.HapticFeedback.notificationOccurred('success'); }catch(e){} }
+            cart.push({id, name, price});
+            cartTotal += parseFloat(price);
+            
+            document.getElementById('cart-count').innerText = cart.length;
+            document.getElementById('cart-total').innerText = cartTotal.toFixed(2);
+            document.getElementById('cart-bar').classList.remove('translate-y-24'); // إظهار السلة
+        }
+
+        // إتمام الطلب وإرساله للبوت
+        function checkout(btn) {
+            if(cart.length === 0) return;
+            if(tg && tg.HapticFeedback) { try{ tg.HapticFeedback.impactOccurred('heavy'); }catch(e){} }
+            
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التأكيد...';
+            
+            setTimeout(() => {
+                const data = { action: 'checkout', items: cart, total: cartTotal.toFixed(2) };
+                if (tg && tg.sendData) {
+                    tg.sendData(JSON.stringify(data)); // إرسال للبوت
+                    tg.close(); // إغلاق النافذة
+                } else {
+                    // إذا كان يختبر من المتصفح العادي
+                    alert("✅ تم استلام الطلب بنجاح (هذه رسالة اختبار للمتصفح العادي).\n\nمجموعاتك: " + cart.length + "\nالإجمالي: $" + data.total);
+                    btn.innerHTML = 'إتمام الطلب';
+                }
+            }, 800);
+        }
+
+        // تشغيل العداد التنازلي
+        function startTimer() {
+            let h = 2, m = 45, s = 10;
+            setInterval(() => {
+                s--;
+                if(s < 0) { s = 59; m--; }
+                if(m < 0) { m = 59; h--; }
+                if(h < 0) { h = 2; m = 45; s = 10; }
+                
+                document.getElementById('h').innerText = h.toString().padStart(2, '0');
+                document.getElementById('m').innerText = m.toString().padStart(2, '0');
+                document.getElementById('s').innerText = s.toString().padStart(2, '0');
+            }, 1000);
+        }
+
+        // الإشعارات الوهمية لزيادة الثقة
+        const names = ['علي', 'عمر', 'زهراء', 'مصطفى', 'نور', 'حسين', 'مريم', 'أحمد', 'شهد'];
+        const cities = ['بغداد', 'البصرة', 'أربيل', 'النجف', 'الموصل', 'السليمانية', 'بابل'];
+        
+        function startFakeSocialProof() {
+            setInterval(() => {
+                if(allProducts.length === 0) return;
+                
+                const rName = names[Math.floor(Math.random() * names.length)];
+                const rCity = cities[Math.floor(Math.random() * cities.length)];
+                const rProd = allProducts[Math.floor(Math.random() * allProducts.length)].name;
+                
+                document.getElementById('sp-name').innerText = rName;
+                document.getElementById('sp-city').innerText = rCity;
+                document.getElementById('sp-item').innerText = rProd;
+                document.getElementById('sp-img').src = `https://ui-avatars.com/api/?name=${rName}&background=random`;
+                
+                const proofBox = document.getElementById('social-proof');
+                proofBox.classList.add('show');
+                setTimeout(() => { proofBox.classList.remove('show'); }, 4000);
+            }, 12000); // يظهر كل 12 ثانية
+        }
+
+        // تشغيل الوظائف الأساسية عند فتح الصفحة
+        startTimer();
+        initApp();
     </script>
 </body>
 </html>
