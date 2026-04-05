@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>متجر الأناقة - النسخة العراقية</title>
+    <title>متجر الأناقة - النسخة العراقية المتكاملة</title>
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -20,22 +20,22 @@
         .product-card { transition: all 0.2s; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .product-card:active { transform: scale(0.97); }
         .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 100; display: flex; justify-content: center; align-items: flex-end; }
-        
-        /* تصميم نموذج الشراء (Bottom Sheet) */
         .checkout-sheet { background: white; width: 100%; max-width: 500px; border-radius: 24px 24px 0 0; padding: 2rem 1.5rem; max-height: 90vh; overflow-y: auto; box-shadow: 0 -10px 25px rgba(0,0,0,0.1); }
         
-        /* التنسيقات العامة للمدخلات */
-        .input-field { w-full; bg-gray-50; border; border-gray-200; text-gray-800; text-sm; rounded-xl; focus:ring-red-500; focus:border-red-500; block; p-3; outline-none; transition-all; mt-1; mb-4; }
+        /* تأثيرات شريط التتبع */
+        .step-icon { transition: all 0.5s ease; }
+        .step-active { background-color: #10b981; border-color: #10b981; color: white !important; box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); }
+        .step-active i { color: white !important; }
     </style>
 </head>
-<body class="pb-24">
+<body class="pb-32">
 
     <header class="bg-white sticky top-0 z-40 shadow-sm border-b border-gray-100 p-4">
         <div class="flex justify-between items-center mb-3">
             <h1 class="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-red-600 to-orange-500">الأناقة 🇮🇶</h1>
             <span class="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full"><i class="fas fa-truck"></i> توصيل لكل العراق</span>
         </div>
-        <div class="flex overflow-x-auto gap-3 hide-scrollbar">
+        <div class="flex overflow-x-auto gap-3 hide-scrollbar pb-1">
             <button onclick="filterCategory('الكل', this)" class="cat-btn flex-shrink-0 bg-red-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-md">الكل</button>
             <button onclick="filterCategory('رجالي', this)" class="cat-btn flex-shrink-0 bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold">رجالي</button>
             <button onclick="filterCategory('نسائي', this)" class="cat-btn flex-shrink-0 bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold">نسائي</button>
@@ -43,20 +43,48 @@
         </div>
     </header>
 
+    <div class="p-4 mx-4 mt-4 mb-2 bg-white rounded-2xl shadow-sm border border-gray-100">
+        <h3 class="text-sm font-black text-gray-800 mb-4"><i class="fas fa-map-marker-alt text-red-500"></i> تتبع طلبك لحظة بلحظة</h3>
+        
+        <div class="flex gap-2 mb-4">
+            <input type="tel" id="track-phone" placeholder="رقم الهاتف (مثال: 0770...)" class="flex-1 bg-gray-50 border border-gray-200 text-sm rounded-xl p-2 outline-none focus:border-blue-500" dir="ltr">
+            <button onclick="trackMyOrder()" class="bg-gray-900 text-white px-4 rounded-xl text-xs font-bold active:scale-95 transition-all">تتبع</button>
+        </div>
+
+        <div id="tracking-visual" class="hidden mt-6 mb-2">
+            <div class="relative flex justify-between items-center w-full mb-3 px-2">
+                <div class="absolute h-1 bg-gray-200 top-1/2 left-4 right-4 -translate-y-1/2 -z-10 rounded-full"></div>
+                <div id="progress-line" class="absolute h-1 bg-green-500 top-1/2 left-4 -translate-y-1/2 transition-all duration-700 -z-10 rounded-full" style="width: 0%; right: auto;"></div>
+                
+                <div id="step-1" class="step-icon bg-white w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-200 z-10"><i class="fas fa-clipboard-list text-xs text-gray-400"></i></div>
+                <div id="step-2" class="step-icon bg-white w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-200 z-10"><i class="fas fa-box text-xs text-gray-400"></i></div>
+                <div id="step-3" class="step-icon bg-white w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-200 z-10"><i class="fas fa-truck text-xs text-gray-400"></i></div>
+                <div id="step-4" class="step-icon bg-white w-8 h-8 flex items-center justify-center rounded-full border-2 border-gray-200 z-10"><i class="fas fa-check-double text-xs text-gray-400"></i></div>
+            </div>
+            <div class="flex justify-between px-1 text-[9px] font-bold text-gray-500">
+                <span id="text-1">تأكيد</span>
+                <span id="text-2">تجهيز</span>
+                <span id="text-3">شحن</span>
+                <span id="text-4">تسليم</span>
+            </div>
+            <div id="status-text" class="mt-4 text-center text-xs font-black text-green-600 bg-green-50 p-2 rounded-lg"></div>
+        </div>
+    </div>
+
     <div id="products-grid" class="grid grid-cols-2 gap-3 p-4">
         <div class="col-span-2 text-center py-10 text-gray-400">
             <i class="fas fa-spinner fa-spin text-2xl mb-2"></i><br>جاري تحميل البضاعة...
         </div>
     </div>
 
-    <div id="cart-bar" class="fixed bottom-4 left-4 right-4 bg-gray-900 text-white p-3 rounded-2xl shadow-2xl flex justify-between items-center transform translate-y-24 transition-transform duration-300 z-40 border border-gray-700">
+    <div id="cart-bar" class="fixed bottom-4 left-4 right-4 bg-gray-900 text-white p-3 rounded-2xl shadow-2xl flex justify-between items-center transform translate-y-32 transition-transform duration-300 z-40 border border-gray-700">
         <div class="flex items-center gap-3">
             <div class="relative">
                 <i class="fas fa-shopping-bag text-2xl text-gray-300"></i>
                 <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-900">0</span>
             </div>
             <div>
-                <p class="text-[10px] text-gray-400">الإجمالي (بدون توصيل)</p>
+                <p class="text-[10px] text-gray-400">المجموع المبدئي</p>
                 <p class="text-sm font-black text-yellow-400"><span id="cart-total">0</span> د.ع</p>
             </div>
         </div>
@@ -99,18 +127,22 @@
                 <option value="دهوك">دهوك (8,000 د.ع)</option>
             </select>
 
-            <label class="text-xs font-bold text-gray-600">العنوان بالتفصيل (المنطقة، الشارع، أقرب نقطة دالة)</label>
+            <label class="text-xs font-bold text-gray-600">العنوان بالتفصيل</label>
             <input type="text" id="c-address" class="w-full bg-gray-50 border border-gray-200 text-sm rounded-xl p-3 outline-none mt-1 mb-4 focus:border-red-500" placeholder="مثال: المنصور، شارع الرواد...">
 
             <label class="text-xs font-bold text-gray-600 block mb-2">طريقة الدفع</label>
-            <div class="flex gap-3 mb-6">
-                <label class="flex-1 border border-red-500 bg-red-50 p-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer">
-                    <input type="radio" name="payment" value="الدفع عند الاستلام" checked class="accent-red-600">
-                    <span class="text-xs font-bold text-red-900">عند الاستلام 💵</span>
+            <div class="grid grid-cols-2 gap-2 mb-6">
+                <label class="border border-green-500 bg-green-50 p-2 rounded-xl flex items-center justify-center gap-1 cursor-pointer">
+                    <input type="radio" name="payment" value="الدفع عند الاستلام" checked class="accent-green-600">
+                    <span class="text-[11px] font-bold text-green-900">عند الاستلام 💵</span>
                 </label>
-                <label class="flex-1 border border-gray-200 bg-gray-50 p-3 rounded-xl flex items-center justify-center gap-2 cursor-pointer opacity-50">
-                    <input type="radio" name="payment" value="زين كاش" disabled class="accent-red-600">
-                    <span class="text-xs font-bold text-gray-500">زين كاش (قريباً)</span>
+                <label class="border border-blue-500 bg-blue-50 p-2 rounded-xl flex items-center justify-center gap-1 cursor-pointer">
+                    <input type="radio" name="payment" value="فيزا / ماستر" class="accent-blue-600">
+                    <span class="text-[11px] font-bold text-blue-900">فيزا/ماستر 💳</span>
+                </label>
+                <label class="col-span-2 border border-gray-200 bg-gray-50 p-2 rounded-xl flex items-center justify-center gap-1 cursor-pointer">
+                    <input type="radio" name="payment" value="زين كاش" class="accent-gray-600">
+                    <span class="text-[11px] font-bold text-gray-600">زين كاش 📱</span>
                 </label>
             </div>
 
@@ -128,80 +160,55 @@
     </div>
 
     <script>
-        // ================= الإعدادات العامة =================
         let tg = null;
         if (window.Telegram && window.Telegram.WebApp) {
             tg = window.Telegram.WebApp;
             try { tg.expand(); tg.ready(); } catch(e) {}
         }
 
-        // 🚨 روابط Supabase الخاصة بك 🚨
-        const S_URL ='https://tyqozguvpzualjrtmziz.supabase.co';
-        const S_KEY ='sb_publishable_adpf3bfmKS3FJnly0NqoEg_-DKwnL6T';
+        // 🚨 الروابط الخاصة بك 🚨
+        const S_URL = 'https://tyqozguvpzualjrtmziz.supabase.co';
+        const S_KEY = 'sb_publishable_adpf3bfmKS3FJnly0NqoEg_-DKwnL6T';
         let dbClient = null;
 
-        // أسعار التوصيل للمحافظات (بالدينار العراقي)
-        const deliveryPrices = {
-            "بغداد": 5000, "البصرة": 8000, "أربيل": 8000, "النجف": 6000, "كربلاء": 6000,
-            "الموصل": 8000, "بابل": 6000, "الأنبار": 7000, "ذي قار": 7000, "ميسان": 7000,
-            "واسط": 6000, "المثنى": 7000, "القادسية": 6000, "صلاح الدين": 7000,
-            "كركوك": 7000, "ديالى": 6000, "السليمانية": 8000, "دهوك": 8000
-        };
+        const deliveryPrices = { "بغداد": 5000, "البصرة": 8000, "أربيل": 8000, "النجف": 6000, "كربلاء": 6000, "الموصل": 8000, "بابل": 6000, "الأنبار": 7000, "ذي قار": 7000, "ميسان": 7000, "واسط": 6000, "المثنى": 7000, "القادسية": 6000, "صلاح الدين": 7000, "كركوك": 7000, "ديالى": 6000, "السليمانية": 8000, "دهوك": 8000 };
 
         let allProducts = [];
         let cart = [];
-        let cartTotal = 0; // إجمالي البضاعة
-        let finalTotal = 0; // إجمالي البضاعة + التوصيل
+        let cartTotal = 0;
+        let finalTotal = 0;
 
-        // ================= الاتصال بقاعدة البيانات =================
         async function initApp() {
-            if (!S_URL.startsWith('http')) {
-                document.getElementById('products-grid').innerHTML = '<div class="col-span-2 text-center p-4 bg-red-50 text-red-600 rounded-lg text-sm font-bold border border-red-200">⚠️ يرجى إدخال روابط Supabase في كود HTML لتعمل البضاعة.</div>';
-                return;
-            }
-
             try {
                 dbClient = window.supabase.createClient(S_URL, S_KEY);
                 const { data, error } = await dbClient.from('inventory').select('*').gt('stock', 0);
-                
-                if (!error && data) {
-                    allProducts = data;
-                    renderProducts(allProducts);
-                } else {
-                    document.getElementById('products-grid').innerHTML = '<p class="col-span-2 text-center text-red-500 font-bold">حدث خطأ في تحميل البضاعة.</p>';
+                if (!error && data) { 
+                    allProducts = data; 
+                    renderProducts(allProducts); 
+                } else { 
+                    document.getElementById('products-grid').innerHTML = '<p class="col-span-2 text-center text-red-500 font-bold">حدث خطأ في تحميل البضاعة.</p>'; 
                 }
-            } catch(e) {
-                document.getElementById('products-grid').innerHTML = '<p class="col-span-2 text-center text-red-500 font-bold">لا يمكن الاتصال بالخادم.</p>';
+            } catch(e) { 
+                document.getElementById('products-grid').innerHTML = '<p class="col-span-2 text-center text-red-500 font-bold">تعذر الاتصال بالخادم.</p>'; 
             }
         }
 
-        // ================= رسم المنتجات =================
         function renderProducts(products) {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = '';
-            
-            if(products.length === 0) {
-                grid.innerHTML = '<p class="col-span-2 text-center text-gray-500 py-10">لا توجد منتجات حالياً.</p>';
-                return;
-            }
+            if(products.length === 0) { grid.innerHTML = '<p class="col-span-2 text-center text-gray-500 py-10">لا توجد منتجات.</p>'; return; }
 
             products.forEach(p => {
                 grid.innerHTML += `
                     <div class="product-card relative">
                         <div class="relative w-full h-44 bg-gray-100">
                             <img src="${p.image_url || 'https://via.placeholder.com/300'}" class="w-full h-full object-cover" loading="lazy">
-                            <div class="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-2 py-0.5 rounded text-[10px] font-bold text-gray-800">
-                                📏 ${p.size}
-                            </div>
+                            <div class="absolute bottom-2 left-2 bg-white/90 px-2 py-0.5 rounded text-[10px] font-bold text-gray-800">📏 ${p.size}</div>
                         </div>
                         <div class="p-3">
                             <h3 class="text-xs font-bold text-gray-700 leading-tight h-8 overflow-hidden">${p.name}</h3>
-                            <div class="mt-1">
-                                <span class="text-red-600 font-black text-sm">${Number(p.price).toLocaleString()} د.ع</span>
-                            </div>
-                            <button onclick="addToCart('${p.id}', '${p.name}', ${p.price})" class="mt-3 w-full bg-gray-900 text-white text-xs font-bold py-2 rounded-xl flex justify-center items-center gap-1 hover:bg-gray-800 active:scale-95 transition-transform">
-                                <i class="fas fa-cart-plus"></i> أضف للسلة
-                            </button>
+                            <div class="mt-1"><span class="text-red-600 font-black text-sm">${Number(p.price).toLocaleString()} د.ع</span></div>
+                            <button onclick="addToCart('${p.id}', '${p.name}', ${p.price})" class="mt-3 w-full bg-gray-900 text-white text-xs font-bold py-2 rounded-xl active:scale-95 transition-transform"><i class="fas fa-cart-plus"></i> أضف للسلة</button>
                         </div>
                     </div>
                 `;
@@ -210,44 +217,33 @@
 
         function filterCategory(cat, btn) {
             if(tg && tg.HapticFeedback) { try{ tg.HapticFeedback.selectionChanged(); }catch(e){} }
-            
-            document.querySelectorAll('.cat-btn').forEach(b => {
-                b.className = 'cat-btn flex-shrink-0 bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold transition-all';
-            });
+            document.querySelectorAll('.cat-btn').forEach(b => b.className = 'cat-btn flex-shrink-0 bg-gray-100 text-gray-600 px-4 py-1.5 rounded-full text-xs font-bold transition-all');
             btn.className = 'cat-btn flex-shrink-0 bg-red-600 text-white px-4 py-1.5 rounded-full text-xs font-bold shadow-md transition-all';
-
-            const filtered = cat === 'الكل' ? allProducts : allProducts.filter(p => p.main_category === cat);
-            renderProducts(filtered);
+            renderProducts(cat === 'الكل' ? allProducts : allProducts.filter(p => p.main_category === cat));
         }
 
-        // ================= إدارة السلة والحجز =================
         function addToCart(id, name, price) {
             if(tg && tg.HapticFeedback) { try{ tg.HapticFeedback.notificationOccurred('success'); }catch(e){} }
             cart.push({id, name, price});
             cartTotal += parseFloat(price);
-            
             document.getElementById('cart-count').innerText = cart.length;
             document.getElementById('cart-total').innerText = cartTotal.toLocaleString();
-            document.getElementById('cart-bar').classList.remove('translate-y-24');
+            document.getElementById('cart-bar').classList.remove('translate-y-32');
         }
 
         function openCheckout() {
             if(cart.length === 0) return;
             if(tg && tg.HapticFeedback) { try{ tg.HapticFeedback.impactOccurred('light'); }catch(e){} }
-            
             document.getElementById('checkout-modal').classList.remove('hidden');
-            updateFinalTotal(); // تحديث الأرقام
+            updateFinalTotal();
         }
 
-        function closeCheckout() {
-            document.getElementById('checkout-modal').classList.add('hidden');
-        }
+        function closeCheckout() { document.getElementById('checkout-modal').classList.add('hidden'); }
 
         function updateFinalTotal() {
             const city = document.getElementById('c-city').value;
             const deliveryCost = city ? deliveryPrices[city] : 0;
             finalTotal = cartTotal + deliveryCost;
-
             document.getElementById('sum-items').innerText = cartTotal.toLocaleString();
             document.getElementById('sum-delivery').innerText = deliveryCost.toLocaleString();
             document.getElementById('sum-final').innerText = finalTotal.toLocaleString();
@@ -262,16 +258,18 @@
             const btn = document.getElementById('btn-submit');
 
             if(!name || !phone || !city || !address) {
-                alert("عزيزي، يرجى تعبئة كافة الحقول (الاسم، الهاتف، المحافظة، العنوان) لضمان وصول طلبك.");
+                alert("يرجى تعبئة كافة الحقول (الاسم، الهاتف، المحافظة، العنوان).");
                 return;
             }
 
             if(tg && tg.HapticFeedback) { try{ tg.HapticFeedback.impactOccurred('heavy'); }catch(e){} }
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تسجيل الطلب...';
             btn.disabled = true;
+            
+            // استخراج آي دي المستخدم من تليجرام لربطه بالطلب (من أجل الإشعارات)
+            const chatId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : 0;
 
             try {
-                // 1. تسجيل الطلب في قاعدة البيانات (يعمل عالمياً للفيسبوك والويب)
                 if(dbClient) {
                     const { error } = await dbClient.from('orders').insert([{
                         customer_name: name,
@@ -280,36 +278,80 @@
                         address: address,
                         items: cart,
                         total_amount: finalTotal,
-                        payment_method: payment
+                        payment_method: payment,
+                        chat_id: chatId // إرسال الآي دي للقاعدة
                     }]);
-                    
                     if(error) throw error;
                 }
 
-                // 2. إرسال البيانات لتليجرام لإصدار الفاتورة وإشعار المدير
                 if (tg && tg.sendData) {
-                    const data = { action: 'checkout', items: cart, total: finalTotal.toLocaleString(), city: city };
+                    const data = { action: 'checkout', items: cart, total: finalTotal.toLocaleString(), city: city, payment: payment };
                     tg.sendData(JSON.stringify(data));
                     tg.close();
                 } else {
-                    // في حال كان الزبون يشتري من متصفح عادي (فيسبوك)
-                    alert(`✅ مبروك ${name}!\nتم استلام طلبك بنجاح، وسيصلك إلى ${city} قريباً.\nالمجموع: ${finalTotal.toLocaleString()} د.ع`);
-                    cart = []; cartTotal = 0; // تصفير السلة
-                    document.getElementById('cart-bar').classList.add('translate-y-24');
-                    closeCheckout();
-                    btn.innerHTML = '<i class="fas fa-check-circle"></i> تأكيد الطلب';
-                    btn.disabled = false;
+                    alert(`✅ مبروك ${name}!\nتم استلام طلبك بنجاح، وسيصلك إلى ${city} قريباً.`);
+                    location.reload(); 
                 }
-
             } catch(e) {
                 console.error(e);
-                alert("حدث خطأ أثناء إرسال الطلب، يرجى المحاولة مرة أخرى.");
+                alert("حدث خطأ أثناء الاتصال بقاعدة البيانات.");
                 btn.innerHTML = '<i class="fas fa-check-circle"></i> تأكيد الطلب';
                 btn.disabled = false;
             }
         }
 
-        // تشغيل
+        // ================= نظام التتبع البصري =================
+        async function trackMyOrder() {
+            const phone = document.getElementById('track-phone').value.trim();
+            const visualBox = document.getElementById('tracking-visual');
+            const statusText = document.getElementById('status-text');
+            const line = document.getElementById('progress-line');
+            
+            // إعادة ضبط الأيقونات
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`step-${i}`).classList.remove('step-active');
+            }
+            
+            if(!phone) { alert("أدخل رقم الهاتف أولاً."); return; }
+            if(!dbClient) return;
+
+            statusText.innerText = "جاري البحث...";
+            visualBox.classList.remove('hidden');
+
+            const { data, error } = await dbClient.from('orders').select('order_status').eq('phone_number', phone).order('id', { ascending: false }).limit(1);
+            
+            if (data && data.length > 0) {
+                const status = data[0].order_status;
+                statusText.innerText = status;
+                
+                // تحديد نسبة التقدم والأيقونات المضاءة
+                if(status.includes("مراجعة")) {
+                    line.style.width = "0%";
+                } else if(status.includes("تأكيد")) {
+                    line.style.width = "25%";
+                    document.getElementById('step-1').classList.add('step-active');
+                } else if(status.includes("تجهيز")) {
+                    line.style.width = "50%";
+                    document.getElementById('step-1').classList.add('step-active');
+                    document.getElementById('step-2').classList.add('step-active');
+                } else if(status.includes("شحن")) {
+                    line.style.width = "75%";
+                    document.getElementById('step-1').classList.add('step-active');
+                    document.getElementById('step-2').classList.add('step-active');
+                    document.getElementById('step-3').classList.add('step-active');
+                } else if(status.includes("تسليم")) {
+                    line.style.width = "100%";
+                    document.getElementById('step-1').classList.add('step-active');
+                    document.getElementById('step-2').classList.add('step-active');
+                    document.getElementById('step-3').classList.add('step-active');
+                    document.getElementById('step-4').classList.add('step-active');
+                }
+            } else {
+                statusText.innerText = "عذراً، لم نجد طلباً بهذا الرقم.";
+                line.style.width = "0%";
+            }
+        }
+
         initApp();
     </script>
 </body>
